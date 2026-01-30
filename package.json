@@ -1,0 +1,17 @@
+{
+  "name": "ops-incident-first-response-agent",
+  "version": "1.0.0",
+  "description": "Agentic AI that automates first-response ops incidents using IBM watsonx Orchestrate",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces"
+  },
+  "keywords": ["ibm", "watsonx", "orchestrate", "agentic-ai", "incident-response", "automation"],
+  "license": "MIT"
+}
