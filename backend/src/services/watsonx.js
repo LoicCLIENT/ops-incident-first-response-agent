@@ -1,7 +1,7 @@
 const axios = require('axios');
 const querystring = require('querystring');
-// Hardcoded for Sydney Region to avoid .env confusion
-const WATSONX_AI_ENDPOINT = "https://au-syd.ml.cloud.ibm.com"; 
+// Use us-south region (or your region)
+const WATSONX_AI_ENDPOINT = "https://us-south.ml.cloud.ibm.com"; 
 const WATSONX_API_KEY = process.env.WATSONX_API_KEY;
 const WATSONX_PROJECT_ID = process.env.WATSONX_PROJECT_ID;
 let cachedToken = null;
@@ -20,9 +20,10 @@ async function getIamToken() {
     );
     cachedToken = response.data.access_token;
     tokenExpiration = currentTime + response.data.expires_in;
+    console.log('[Watson] IAM token refreshed');
     return cachedToken;
   } catch (error) {
-    console.error('IAM Token Error:', error.message);
+    console.error('[Watson] IAM Token Error:', error.message);
     throw new Error('Authentication failed');
   }
 }
@@ -31,30 +32,39 @@ async function callWatsonxOrchestrate({ skill, input }) {
     throw new Error('Missing WATSONX_PROJECT_ID in .env');
   }
   const token = await getIamToken();
-  // 1. MAP the Orchestrate "Skill" names to simple instructions
-  let instruction = "";
+  
+  // Map the Orchestrate "Skill" names to system instructions
+  let systemMessage = "";
   if (skill === 'incident-classifier') {
-    instruction = "You are an Incident Classifier. Output JSON only with fields: severity (P1/P2/P3), category, confidence, reasoning. Classify this:";
+    systemMessage = "You are an Incident Classifier. Respond with JSON only (no markdown, no explanation). Fields: severity (P1/P2/P3/P4), category, confidence (0-1), tags (array), reasoning.";
   } else if (skill === 'incident-assigner') {
-    instruction = "You are an Incident Assigner. Output JSON only with fields: owner, team, confidence. Assign this:";
+    systemMessage = "You are an Incident Assigner. Respond with JSON only. Fields: team, owner, escalationPath (array), reasoning.";
   } else {
-    instruction = "You are an Action Recommender. Output JSON only with field: steps (array of strings). Recommend actions for:";
+    systemMessage = "You are an Action Recommender. Respond with JSON only. Fields: immediate (array), diagnostic (array), communication (array).";
   }
-  // 2. Combine the prompt
-  const fullPrompt = `${instruction}\n\n${input.prompt}`;
+
   try {
+    console.log(`[Watson] Calling ${skill}...`);
     const response = await axios.post(
-      `${WATSONX_AI_ENDPOINT}/ml/v1/text/generation?version=2023-05-29`,
+      `${WATSONX_AI_ENDPOINT}/ml/v1/text/chat?version=2023-05-29`,
       {
-        input: fullPrompt,
-        parameters: {
-          decoding_method: "greedy",
-          max_new_tokens: 300,
-          min_new_tokens: 1,
-          repetition_penalty: 1
-        },
-        model_id: "ibm/granite-13b-chat-v2", 
-        project_id: WATSONX_PROJECT_ID
+        messages: [
+          {
+            role: "system",
+            content: systemMessage
+          },
+          {
+            role: "user",
+            content: input.prompt
+          }
+        ],
+        project_id: WATSONX_PROJECT_ID,
+        model_id: "ibm/granite-3-3-8b-instruct",
+        frequency_penalty: 0,
+        max_tokens: 2000,
+        presence_penalty: 0,
+        temperature: 0,
+        top_p: 1
       },
       {
         headers: {
@@ -64,62 +74,30 @@ async function callWatsonxOrchestrate({ skill, input }) {
         }
       }
     );
-    // 3. Clean and Parse the response
-    const generatedText = response.data.results[0].generated_text;
+    
+    // Extract the generated text from response
+    const generatedText = response.data.choices[0].message.content;
+    console.log(`[Watson] ${skill} response:`, generatedText.substring(0, 100));
+    
     try {
-        const cleanText = generatedText.replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(cleanText);
+      // Clean markdown code blocks if present
+      const cleanText = generatedText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanText);
+      return parsed;
     } catch (e) {
-        return { result: generatedText, raw: true };
+      console.error(`[Watson] Failed to parse JSON from ${skill}:`, e.message);
+      return { error: true, fallback: "Invalid JSON response", raw: generatedText };
     }
   } catch (error) {
-    console.error(`Direct Watsonx.ai call failed for ${skill}:`); // <--- Look for this in logs if it fails
+    console.error(`[Watson] API call failed for ${skill}:`);
     if (error.response) {
-      console.error(JSON.stringify(error.response.data, null, 2));
+      console.error('[Watson] Status:', error.response.status);
+      console.error('[Watson] Data:', JSON.stringify(error.response.data, null, 2));
     } else {
-      console.error(error.message);
+      console.error('[Watson] Error:', error.message);
     }
     // Return a fallback so the UI doesn't crash
-    return { error: true, fallback: "AI unavailable" };
+    return { error: true, fallback: "Watson AI unavailable" };
   }
 }
-module.exports = { callWatsonxOrchestrate };
-// backend/src/services/watsonx.js
-//EMERGENCY MOCK MODE: No API Key or Project ID needed!
-/*
-async function callWatsonxOrchestrate({ skill, input }) {
-  console.log(`[Mock AI] Simulating execution for ${skill}...`);
-  
-  // Fake a 1-second "thinking" delay to make it look real in the demo
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // Return realistic data based on the skill requested
-  if (skill === 'incident-classifier') {
-    return {
-      severity: "P1",
-      category: "Database",
-      confidence: 0.95,
-      reasoning: "Keywords 'connection failing' and 'down' indicate critical database outage."
-    };
-  } 
-  
-  else if (skill === 'incident-assigner') {
-    return {
-      owner: "L3 Database Team",
-      team: "DBA-OnCall",
-      confidence: 0.90
-    };
-  } 
-  
-  else { // incident-action-recommender
-    return {
-      steps: [
-        "Check database replica status",
-        "Restart the primary connection pool",
-        "Rollback recent schema changes"
-      ]
-    };
-  }
-}
-*/
 module.exports = { callWatsonxOrchestrate };

@@ -1,9 +1,16 @@
-const { createTicket } = require('../services/ticketing');
 const { sendNotification } = require('../services/notifications');
 const { classifyIncident } = require('./classification');
 const { assignOwner } = require('./assignment');
 const { recommendActions } = require('./actions');
+
+function generateTicketId() {
+  const year = new Date().getFullYear();
+  const num = String(Math.floor(Math.random() * 9000) + 1000).padStart(4, '0');
+  return `INC-${year}-${num}`;
+}
+
 async function processIncident({ description, source, metadata }) {
+  const startTime = Date.now();
   console.log(`Processing incident from ${source}...`);
 
   try {
@@ -17,32 +24,43 @@ async function processIncident({ description, source, metadata }) {
       recommendActions(description, classification)
     ]);
 
-    // Step 3: Send Notification (Fire & Forget)
-    sendNotification({ classification, assignment, original_alert: { description } });
+    // Step 3: Generate ticket
+    const ticket = {
+      id: generateTicketId(),
+      status: 'Open',
+      priority: classification.severity === 'P1' ? 'Urgent' : 'High'
+    };
 
-    // Step 4: Auto-create a ticket for tracking
-    const ticket = await createTicket({ classification, assignment, original_alert: { description } });
+    // Step 4: Create notification
+    const notification = {
+      title: `${classification.severity} Incident: ${classification.category}`,
+      body: `Assigned: ${assignment.owner} | Ticket: ${ticket.id}`
+    };
 
-    // Step 5: Return the unified response (WITH ticket details)
+    // Step 5: Send Notification (Fire & Forget)
+    sendNotification({ classification, assignment, actions, ticket });
+
+    // Step 6: Return the unified response matching frontend expectations
     return {
-      status: 'processed',
-      timestamp: new Date().toISOString(),
-      original_alert: { description, source, metadata },
-      analysis: {
-        classification,
-        assignment,
-        suggested_actions: actions
-      },
-      action_taken: {
-        ticket_id: ticket.id,
-        ticket_link: ticket.link
-      }
+      classification,
+      assignment,
+      ticket,
+      actions,
+      notification,
+      processingTime: Date.now() - startTime,
+      steps: [
+        { message: `Extracted incident` },
+        { message: `Severity ${classification.severity} (${(classification.confidence * 100).toFixed(0)}%)` },
+        { message: `Assigned to ${assignment.owner}` },
+        { message: `Created ${ticket.id}` },
+        { message: `${actions.immediate?.length || 0} actions generated` },
+        { message: 'Analysis complete' }
+      ]
     };
 
   } catch (error) {
     console.error('Orchestration failed:', error);
     return {
-      status: 'failed',
       error: error.message,
       original_alert: { description, source, metadata }
     };
