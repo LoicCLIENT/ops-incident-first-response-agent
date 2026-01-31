@@ -4,7 +4,6 @@ import AgentWorkflow from './components/AgentWorkflow';
 import ResultsPanel from './components/ResultsPanel';
 import SkeletonPanel from './components/SkeletonPanel';
 import { processIncident } from './services/api';
-
 // MOCK DATA - Remove when backend is ready
 /*
 const MOCK_RESPONSE = {
@@ -61,6 +60,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [incidentData, setIncidentData] = useState(null);
   const startTimeRef = useRef(null);
 
   // Live timer while processing
@@ -75,7 +75,8 @@ function App() {
     return () => clearInterval(interval);
   }, [loading]);
 
-  const handleSubmit = async (incidentData) => {
+  const handleSubmit = async (formData) => {
+    setIncidentData(formData);
     setLoading(true);
     setResults(null);
     setElapsedTime(0);
@@ -87,7 +88,7 @@ function App() {
       }
 
       const finalTime = Date.now() - startTimeRef.current;
-      const response = await processIncident(incidentData);
+      const response = await processIncident(formData);
       setCurrentStep('complete');
       setResults({ ...response, processingTime: finalTime });
     } catch (error) {

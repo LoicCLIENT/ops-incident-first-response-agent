@@ -10,14 +10,12 @@ function getSeverityClass(severity) {
 
 function ResultsPanel({ results }) {
   if (!results) return null;
+
   if (results.error) {
     return (
       <div className="results-panel">
-        <h2>Agent Results</h2>
-        <div className="result-card error">
-          <h3>Error</h3>
-          <p>{results.error}</p>
-        </div>
+        <h2>Error</h2>
+        <p>{results.error}</p>
       </div>
     );
   }
@@ -32,7 +30,7 @@ function ResultsPanel({ results }) {
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(notification.body);
+      await navigator.clipboard.writeText(notification?.body || '');
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -44,8 +42,8 @@ function ResultsPanel({ results }) {
     const exportData = {
       timestamp: new Date().toISOString(),
       incident: {
-        severity: classification.severity,
-        category: classification.category,
+        severity: classification?.severity,
+        category: classification?.category,
         tags: classification.tags,
         confidence: classification.confidence
       },
