@@ -27,6 +27,8 @@ function App() {
       setResults(response);
     } catch (error) {
       console.error('Error:', error);
+      const message = error?.response?.data?.error || error.message || 'Failed to process incident';
+      setResults({ error: message });
     } finally {
       setLoading(false);
     }
@@ -35,7 +37,7 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>🚨 Ops Incident First Response Agent</h1>
+        <h1>Ops Incident First Response Agent</h1>
         <p>Powered by IBM watsonx Orchestrate</p>
       </header>
 
