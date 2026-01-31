@@ -23,24 +23,26 @@ An intelligent first-response agent that:
 4. **Recommends** immediate next steps
 5. **Notifies** stakeholders in real-time
 
-## 🏗️ Architecture
-┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
-│   Alert Source  │────▶│  watsonx Orchestrate │────▶│  Ticketing API  │
-│  (PagerDuty,    │     │                      │     │  (ServiceNow,   │
-│   Datadog, etc) │     │  ┌────────────────┐  │     │   Jira, etc)    │
-└─────────────────┘     │  │ Classification │  │     └─────────────────┘
-│  │     Agent      │  │
-│  └───────┬────────┘  │     ┌─────────────────┐
-│          │           │────▶│  Notification   │
-│  ┌───────▼────────┐  │     │  (Slack, Teams) │
-│  │   Assignment   │  │     └─────────────────┘
-│  │     Agent      │  │
-│  └───────┬────────┘  │
-│          │           │
-│  ┌───────▼────────┐  │
-│  │  Action Agent  │  │
-│  └────────────────┘  │
-└──────────────────────┘
+## 🎥 Demo Video
+https://drive.google.com/file/d/1g_3AKGmou8UhhfcQzI9hEjGRB8ebaZ_U/view?usp=drive_link
+
+## 📸 Screenshots
+
+### Empty State
+![Empty](screenshots/empty.png)
+
+### Processing State
+![Processing](screenshots/loading.png)
+
+### Results State
+![Results](screenshots/result1.png)
+
+### Results (Alternative View)
+![Results](screenshots/result3.png)
+
+## 🏗️ System Architecture
+![Architecture](screenshots/system_architecture.png)
+
 
 ## 🚀 Quick Start
 ```bash
@@ -67,10 +69,11 @@ npm run dev
 
 ## 👥 Team
 
-- **Loic** — Product & Demo Lead
-- **Usama** — Frontend Lead
-- **Aditya** — AI/Backend Lead
-- **Santiago** — AI Logic & QA Lead
+- **Loic** — Product & Demo Lead  
+- **Usama** — Frontend Lead  
+- **Aditya** — AI/Backend Lead  
+- **Santiago** — AI Logic & QA Lead  
+- **Ahmed** — Demo, Documentation & Architecture  
 
 ## 📄 License
 
