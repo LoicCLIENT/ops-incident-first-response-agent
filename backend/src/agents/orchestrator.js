@@ -1,3 +1,4 @@
+const { createTicket } = require('../services/ticketing');
 const { sendNotification } = require('../services/notifications');
 const { classifyIncident } = require('./classification');
 const { assignOwner } = require('./assignment');
@@ -17,10 +18,13 @@ async function processIncident({ description, source, metadata }) {
       recommendActions(description, classification)
     ]);
 
-    // 👇 THIS WAS MISSING! Add it back here:
+    // Step 3: Send Notification (Fire & Forget)
     sendNotification({ classification, assignment, original_alert: { description } });
 
-    // Step 3: Return the unified response to the Frontend
+    // Step 4: Auto-create a ticket for tracking
+    const ticket = await createTicket({ classification, assignment, original_alert: { description } });
+
+    // Step 5: Return the unified response (WITH ticket details)
     return {
       status: 'processed',
       timestamp: new Date().toISOString(),
@@ -29,6 +33,10 @@ async function processIncident({ description, source, metadata }) {
         classification,
         assignment,
         suggested_actions: actions
+      },
+      action_taken: {
+        ticket_id: ticket.id,
+        ticket_link: ticket.link
       }
     };
 
