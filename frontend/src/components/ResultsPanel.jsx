@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 function ResultsPanel({ results }) {
+  const [checkedItems, setCheckedItems] = useState({});
+
   if (!results) return null;
 
   if (results.error) {
@@ -21,6 +23,13 @@ function ResultsPanel({ results }) {
   const actions = results.actions || {};
   const notification = results.notification || { body: '' };
   const processingTime = results.processingTime ?? results.processingTime ?? 0;
+
+  const toggleCheckItem = (itemKey) => {
+    setCheckedItems(prev => ({
+      ...prev,
+      [itemKey]: !prev[itemKey]
+    }));
+  };
 
   const copyToClipboard = () => {
     try {
@@ -43,29 +52,51 @@ function ResultsPanel({ results }) {
 
       <div className="result-card">
         <h3>🏷️ Classification</h3>
-        <p><strong>Category:</strong> {classification.category || '—'}</p>
-        <p><strong>Severity:</strong> {classification.severity || '—'}</p>
-        <p><strong>Confidence:</strong> {confidenceText}</p>
-        <p><strong>Tags:</strong> {classification.tags?.join(', ') || '—'}</p>
+        <ul>
+          <li><strong>Category:</strong> {classification.category || '—'}</li>
+          <li><strong>Severity:</strong> {classification.severity || '—'}</li>
+          <li><strong>Confidence:</strong> {confidenceText}</li>
+          <li><strong>Tags:</strong> {classification.tags?.join(', ') || '—'}</li>
+        </ul>
       </div>
 
       <div className="result-card">
         <h3>👤 Assigned Owner</h3>
-        <p><strong>Team:</strong> {assignment.team || '—'}</p>
-        <p><strong>Primary:</strong> {assignment.owner || '—'}</p>
-        <p><strong>Escalation:</strong> {assignment.escalationPath?.join(' → ') || '—'}</p>
+        <ul>
+          <li><strong>Team:</strong> {assignment.team || '—'}</li>
+          <li><strong>Primary:</strong> {assignment.owner || '—'}</li>
+          <li><strong>Escalation:</strong> {assignment.escalationPath?.join(' → ') || '—'}</li>
+        </ul>
       </div>
 
       <div className="result-card">
         <h3>🎫 Ticket Created</h3>
-        <p><strong>ID:</strong> {ticket.id || '—'}</p>
-        <p><strong>Status:</strong> {ticket.status || '—'} | <strong>Priority:</strong> {ticket.priority || '—'}</p>
+        <ul>
+          <li><strong>ID:</strong> {ticket.id || '—'}</li>
+          <li><strong>Status:</strong> {ticket.status || '—'} | <strong>Priority:</strong> {ticket.priority || '—'}</li>
+        </ul>
       </div>
 
       <div className="result-card">
         <h3>📋 Next Steps Checklist</h3>
-        <ul>
-          {(actions.immediate || []).map((a, i) => <li key={i}>{a}</li>)}
+        <ul className="checklist">
+          {(actions.immediate || []).map((a, i) => {
+            const itemKey = `immediate_${i}`;
+            const isChecked = checkedItems[itemKey] || false;
+            return (
+              <li key={i} className={isChecked ? 'checked' : ''}>
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleCheckItem(itemKey)}
+                  className="checklist-checkbox"
+                />
+                <span style={{ textDecoration: isChecked ? 'line-through' : 'none' }}>
+                  {a}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
