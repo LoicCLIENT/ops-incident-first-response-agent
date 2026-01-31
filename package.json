@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Agentic AI that automates first-response ops incidents using IBM watsonx Orchestrate",
   "private": true,
-  "workspaces": ["frontend", "backend"],
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "npm run dev --workspace=frontend",
@@ -12,6 +15,19 @@
     "test": "npm run test --workspaces",
     "lint": "npm run lint --workspaces"
   },
-  "keywords": ["ibm", "watsonx", "orchestrate", "agentic-ai", "incident-response", "automation"],
-  "license": "MIT"
+  "keywords": [
+    "ibm",
+    "watsonx",
+    "orchestrate",
+    "agentic-ai",
+    "incident-response",
+    "automation"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "axios": "^1.13.4"
+  }
 }
