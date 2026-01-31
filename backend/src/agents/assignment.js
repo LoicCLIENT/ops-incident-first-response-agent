@@ -1,4 +1,5 @@
 const { callWatsonxOrchestrate } = require('../services/watsonx');
+const { extractJsonFromText } = require('../utils/jsonParser');
 const fs = require('fs');
 const path = require('path');
 
@@ -16,16 +17,32 @@ Detected Severity: ${classification.severity}
 
   try {
     const result = await callWatsonxOrchestrate({
-      skill: 'incident-assigner', // Make sure this matches your watsonx skill name
+      skill: 'incident-assigner',
       input: {
         prompt: `${promptTemplate}\n\n${inputContext}`,
         parameters: { max_new_tokens: 150 }
       }
     });
-    return result;
+
+    const output = typeof result === 'string' ? result : result?.output || JSON.stringify(result);
+    const parsed = extractJsonFromText(output) || result;
+
+    return {
+      team: parsed.team || 'SRE',
+      owner: parsed.owner || 'On-Call Generic',
+      ownerName: parsed.ownerName || 'On-Call',
+      escalationPath: Array.isArray(parsed.escalationPath) ? parsed.escalationPath : [],
+      reasoning: parsed.reasoning || 'Assignment complete'
+    };
   } catch (error) {
-    console.error('Assignment agent failed:', error.message);
-    return { owner: 'On-Call Generic', team: 'SRE', confidence: 0.0 };
+    console.error('Assignment failed:', error.message);
+    return {
+      team: 'SRE',
+      owner: 'On-Call Generic',
+      ownerName: 'On-Call',
+      escalationPath: [],
+      reasoning: 'Assignment service unavailable'
+    };
   }
 }
 

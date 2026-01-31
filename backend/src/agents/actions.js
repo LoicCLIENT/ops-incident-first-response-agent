@@ -1,4 +1,5 @@
 const { callWatsonxOrchestrate } = require('../services/watsonx');
+const { extractJsonFromText } = require('../utils/jsonParser');
 const fs = require('fs');
 const path = require('path');
 
@@ -22,10 +23,22 @@ Category: ${classification.category}
         parameters: { max_new_tokens: 300 }
       }
     });
-    return result;
+
+    const output = typeof result === 'string' ? result : result?.output || JSON.stringify(result);
+    const parsed = extractJsonFromText(output) || result;
+
+    return {
+      immediate: Array.isArray(parsed.immediate) ? parsed.immediate : [],
+      diagnostic: Array.isArray(parsed.diagnostic) ? parsed.diagnostic : [],
+      communication: Array.isArray(parsed.communication) ? parsed.communication : []
+    };
   } catch (error) {
     console.error('Action agent failed:', error.message);
-    return { steps: ['Check logs', 'Escalate manually'] };
+    return {
+      immediate: ['Check logs', 'Escalate manually'],
+      diagnostic: [],
+      communication: []
+    };
   }
 }
 

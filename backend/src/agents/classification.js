@@ -1,9 +1,9 @@
 const { callWatsonxOrchestrate } = require('../services/watsonx');
+const { extractJsonFromText } = require('../utils/jsonParser');
 const fs = require('fs');
 const path = require('path');
 
 async function classifyIncident(description) {
-  // Read the prompt template your team already created
   const promptTemplate = fs.readFileSync(
     path.join(__dirname, '../../../prompts/classification.md'), 
     'utf8'
@@ -11,22 +11,31 @@ async function classifyIncident(description) {
 
   try {
     const result = await callWatsonxOrchestrate({
-      skill: 'incident-classifier', // Ensure this matches your watsonx skill ID
+      skill: 'incident-classifier',
       input: {
         prompt: `${promptTemplate}\n\nIncident Description: ${description}`,
         parameters: { max_new_tokens: 200 }
       }
     });
 
-    return result; 
+    const output = typeof result === 'string' ? result : result?.output || JSON.stringify(result);
+    const parsed = extractJsonFromText(output) || result;
+
+    return {
+      severity: parsed.severity || 'P2',
+      category: parsed.category || 'General',
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
+      tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+      reasoning: parsed.reasoning || 'Classification complete'
+    };
   } catch (error) {
-    console.error('Classification failed, falling back to P2/General:', error.message);
+    console.error('Classification failed:', error.message);
     return {
       severity: 'P2',
       category: 'General',
       confidence: 0.5,
       tags: ['fallback'],
-      reasoning: 'AI Classification service was unavailable.'
+      reasoning: 'Classification service unavailable'
     };
   }
 }
