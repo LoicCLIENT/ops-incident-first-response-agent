@@ -9,12 +9,28 @@ function getSeverityClass(severity) {
 }
 
 function ResultsPanel({ results }) {
-  const { classification, assignment, ticket, actions, notification, processingTime } = results;
+  if (!results) return null;
+
+  if (results.error) {
+    return (
+      <div className="results-panel">
+        <h2>Error</h2>
+        <p>{results.error}</p>
+      </div>
+    );
+  }
+
+  const classification = results.classification || {};
+  const assignment = results.assignment || {};
+  const ticket = results.ticket || {};
+  const actions = results.actions || {};
+  const notification = results.notification || { body: '' };
+  const processingTime = results.processingTime || 0;
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(notification.body);
+      await navigator.clipboard.writeText(notification?.body || '');
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -26,8 +42,8 @@ function ResultsPanel({ results }) {
     const exportData = {
       timestamp: new Date().toISOString(),
       incident: {
-        severity: classification.severity,
-        category: classification.category,
+        severity: classification?.severity,
+        category: classification?.category,
         tags: classification.tags,
         confidence: classification.confidence
       },
