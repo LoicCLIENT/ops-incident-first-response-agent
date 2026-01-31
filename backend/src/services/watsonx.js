@@ -4,6 +4,10 @@ const querystring = require('querystring');
 const WATSONX_API_URL = process.env.WATSONX_API_URL; // e.g., https://api.au-syd.orchestrate.watson.cloud.ibm.com
 const WATSONX_API_KEY = process.env.WATSONX_API_KEY;
 
+// Log on startup for debugging
+console.log('[Watson] API_URL configured:', !!WATSONX_API_URL);
+console.log('[Watson] API_KEY configured:', !!WATSONX_API_KEY);
+
 let cachedToken = null;
 let tokenExpiration = 0;
 
@@ -49,9 +53,11 @@ async function getIamToken() {
  */
 async function callWatsonxOrchestrate({ skill, input }) {
   if (!WATSONX_API_KEY || !WATSONX_API_URL) {
+    console.error('[Watson] Missing credentials - API_URL:', !!WATSONX_API_URL, 'API_KEY:', !!WATSONX_API_KEY);
     throw new Error('Missing WATSONX_API_KEY or WATSONX_API_URL in .env');
   }
 
+  console.log(`[Watson] Calling skill '${skill}'...`);
   try {
     const token = await getIamToken();
     
@@ -68,6 +74,7 @@ async function callWatsonxOrchestrate({ skill, input }) {
       }
     );
 
+    console.log(`[Watson] Skill '${skill}' returned successfully`);
     return response.data;
   } catch (error) {
     console.error(`watsonx Orchestrate execution failed for skill '${skill}':`);

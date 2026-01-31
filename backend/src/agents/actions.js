@@ -16,6 +16,7 @@ Category: ${classification.category}
 `;
 
   try {
+    console.log('[Actions] Calling Watson...');
     const result = await callWatsonxOrchestrate({
       skill: 'incident-action-recommender',
       input: {
@@ -23,6 +24,7 @@ Category: ${classification.category}
         parameters: { max_new_tokens: 300 }
       }
     });
+    console.log('[Actions] Watson returned:', JSON.stringify(result).substring(0, 100));
 
     const output = typeof result === 'string' ? result : result?.output || JSON.stringify(result);
     const parsed = extractJsonFromText(output) || result;
@@ -33,7 +35,8 @@ Category: ${classification.category}
       communication: Array.isArray(parsed.communication) ? parsed.communication : []
     };
   } catch (error) {
-    console.error('Action agent failed:', error.message);
+    console.error('[Actions] Watson call failed:', error.message);
+    console.error('[Actions] Falling back to default...');
     return {
       immediate: ['Check logs', 'Escalate manually'],
       diagnostic: [],

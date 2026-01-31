@@ -3,8 +3,10 @@ import IncidentForm from './components/IncidentForm';
 import AgentWorkflow from './components/AgentWorkflow';
 import ResultsPanel from './components/ResultsPanel';
 import SkeletonPanel from './components/SkeletonPanel';
+import { processIncident } from './services/api';
 
 // MOCK DATA - Remove when backend is ready
+/*
 const MOCK_RESPONSE = {
   classification: {
     category: 'Infrastructure',
@@ -53,7 +55,7 @@ Investigation in progress.`
   ],
   processingTime: 1247
 };
-
+*/
 function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -73,7 +75,7 @@ function App() {
     return () => clearInterval(interval);
   }, [loading]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (incidentData) => {
     setLoading(true);
     setResults(null);
     setElapsedTime(0);
@@ -85,9 +87,9 @@ function App() {
       }
 
       const finalTime = Date.now() - startTimeRef.current;
-      const response = { ...MOCK_RESPONSE, processingTime: finalTime };
+      const response = await processIncident(incidentData);
       setCurrentStep('complete');
-      setResults(response);
+      setResults({ ...response, processingTime: finalTime });
     } catch (error) {
       console.error('Error:', error);
       const message = error?.response?.data?.error || error.message || 'Failed to process incident';

@@ -9,7 +9,25 @@ function getSeverityClass(severity) {
 }
 
 function ResultsPanel({ results }) {
-  const { classification, assignment, ticket, actions, notification, processingTime } = results;
+  if (!results) return null;
+  if (results.error) {
+    return (
+      <div className="results-panel">
+        <h2>Agent Results</h2>
+        <div className="result-card error">
+          <h3>Error</h3>
+          <p>{results.error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const classification = results.classification || {};
+  const assignment = results.assignment || {};
+  const ticket = results.ticket || {};
+  const actions = results.actions || {};
+  const notification = results.notification || { body: '' };
+  const processingTime = results.processingTime || 0;
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {

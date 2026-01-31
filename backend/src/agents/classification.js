@@ -10,6 +10,7 @@ async function classifyIncident(description) {
   );
 
   try {
+    console.log('[Classification] Calling Watson...');
     const result = await callWatsonxOrchestrate({
       skill: 'incident-classifier',
       input: {
@@ -17,6 +18,7 @@ async function classifyIncident(description) {
         parameters: { max_new_tokens: 200 }
       }
     });
+    console.log('[Classification] Watson returned:', JSON.stringify(result).substring(0, 100));
 
     const output = typeof result === 'string' ? result : result?.output || JSON.stringify(result);
     const parsed = extractJsonFromText(output) || result;
@@ -29,7 +31,8 @@ async function classifyIncident(description) {
       reasoning: parsed.reasoning || 'Classification complete'
     };
   } catch (error) {
-    console.error('Classification failed:', error.message);
+    console.error('[Classification] Watson call failed:', error.message);
+    console.error('[Classification] Falling back to default...');
     return {
       severity: 'P2',
       category: 'General',

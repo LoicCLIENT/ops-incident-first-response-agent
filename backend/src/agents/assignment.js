@@ -16,6 +16,7 @@ Detected Severity: ${classification.severity}
 `;
 
   try {
+    console.log('[Assignment] Calling Watson...');
     const result = await callWatsonxOrchestrate({
       skill: 'incident-assigner',
       input: {
@@ -23,6 +24,7 @@ Detected Severity: ${classification.severity}
         parameters: { max_new_tokens: 150 }
       }
     });
+    console.log('[Assignment] Watson returned:', JSON.stringify(result).substring(0, 100));
 
     const output = typeof result === 'string' ? result : result?.output || JSON.stringify(result);
     const parsed = extractJsonFromText(output) || result;
@@ -35,7 +37,8 @@ Detected Severity: ${classification.severity}
       reasoning: parsed.reasoning || 'Assignment complete'
     };
   } catch (error) {
-    console.error('Assignment failed:', error.message);
+    console.error('[Assignment] Watson call failed:', error.message);
+    console.error('[Assignment] Falling back to default...');
     return {
       team: 'SRE',
       owner: 'On-Call Generic',
