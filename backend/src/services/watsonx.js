@@ -2,16 +2,6 @@ const axios = require('axios');
 const querystring = require('querystring');
 const fs = require('fs');
 const path = require('path');
-
-// Configuration
-const WATSONX_AI_ENDPOINT = process.env.WATSONX_API_URL || "https://us-south.ml.cloud.ibm.com";
-const WATSONX_API_KEY = process.env.WATSONX_API_KEY;
-const WATSONX_PROJECT_ID = process.env.WATSONX_PROJECT_ID;
-
-// Token cache
-let cachedToken = null;
-let tokenExpiration = 0;
-
 // Load rich prompts at startup for better Watson responses
 const PROMPTS = {
   classifier: fs.readFileSync(path.join(__dirname, '../../../prompts/classification.md'), 'utf8'),
@@ -21,10 +11,15 @@ const PROMPTS = {
 
 console.log('[Watson] Loaded prompts:', Object.keys(PROMPTS).join(', '));
 
+// Use us-south region (or your region)
+const WATSONX_AI_ENDPOINT = "https://us-south.ml.cloud.ibm.com"; 
+const WATSONX_API_KEY = process.env.WATSONX_API_KEY;
+const WATSONX_PROJECT_ID = process.env.WATSONX_PROJECT_ID;
+let cachedToken = null;
+let tokenExpiration = 0;
 async function getIamToken() {
   const currentTime = Math.floor(Date.now() / 1000);
   if (cachedToken && currentTime < tokenExpiration - 300) return cachedToken;
-
   try {
     const response = await axios.post(
       'https://iam.cloud.ibm.com/identity/token',
@@ -74,7 +69,7 @@ async function callWatsonxOrchestrate({ skill, input }) {
           },
           {
             role: "user",
-            content: `Analyze this incident and respond with JSON only:\n\n${input.prompt}`
+            content: input.prompt
           }
         ],
         project_id: WATSONX_PROJECT_ID,
@@ -93,27 +88,18 @@ async function callWatsonxOrchestrate({ skill, input }) {
         }
       }
     );
-
+    
+    // Extract the generated text from response
     const generatedText = response.data.choices[0].message.content;
-    console.log(`[Watson] ${skill} response (${generatedText.length} chars)`);
-
+    console.log(`[Watson] ${skill} response:`, generatedText.substring(0, 100));
+    
     try {
       // Clean markdown code blocks if present
-      let cleanText = generatedText
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
-
-      // Find JSON object in the response
-      const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        cleanText = jsonMatch[0];
-      }
-
+      const cleanText = generatedText.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(cleanText);
       return parsed;
     } catch (e) {
-      console.error(`[Watson] JSON parse error for ${skill}:`, e.message);
+      console.error(`[Watson] Failed to parse JSON from ${skill}:`, e.message);
       return { error: true, fallback: "Invalid JSON response", raw: generatedText };
     }
   } catch (error) {
@@ -124,8 +110,8 @@ async function callWatsonxOrchestrate({ skill, input }) {
     } else {
       console.error('[Watson] Error:', error.message);
     }
+    // Return a fallback so the UI doesn't crash
     return { error: true, fallback: "Watson AI unavailable" };
   }
 }
-
 module.exports = { callWatsonxOrchestrate };
