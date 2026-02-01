@@ -1,3 +1,5 @@
+![Brand](brand.jpeg)
+
 # Ops Incident First Response Agent
 
 > **IBM Dev Day — AI Demystified Hackathon**
@@ -27,23 +29,7 @@ An intelligent first-response agent that:
 
 ##  Architecture
 
-┌─────────────────┐ ┌──────────────────────┐ ┌─────────────────┐
-│ Alert Source │────▶│ watsonx Orchestrate │────▶│ Ticketing API │
-│ (PagerDuty, │ │ │ │ (ServiceNow, │
-│ Datadog, etc) │ │ ┌────────────────┐ │ │ Jira, etc) │
-└─────────────────┘ │ │ Classification │ │ └─────────────────┘
-│ │ Agent │ │
-│ └───────┬────────┘ │ ┌─────────────────┐
-│ │ │────▶│ Notification │
-│ ┌───────▼────────┐ │ │ (Slack, Teams) │
-│ │ Assignment │ │ └─────────────────┘
-│ │ Agent │ │
-│ └───────┬────────┘ │
-│ │ │
-│ ┌───────▼────────┐ │
-│ │ Action Agent │ │
-│ └────────────────┘ │
-└──────────────────────┘
+![System Architecture](sys_arch5.png)
 
 ##  Quick Start
 
