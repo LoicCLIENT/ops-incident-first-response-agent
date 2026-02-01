@@ -1,4 +1,4 @@
-![Brand](images/brand.jpeg)
+![Brand](images/brand.png)
 
 # Ops Incident First Response Agent
 
