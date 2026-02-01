@@ -1,4 +1,4 @@
-![Brand](brand.jpeg)
+![Brand](images/brand.jpeg)
 
 # Ops Incident First Response Agent
 
@@ -29,7 +29,7 @@ An intelligent first-response agent that:
 
 ##  Architecture
 
-![System Architecture](sys_arch5.png)
+![System Architecture](images/sys_arch5.png)
 
 ##  Quick Start
 
