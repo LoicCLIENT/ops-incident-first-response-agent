@@ -6,6 +6,8 @@
 
 An agentic AI solution that automates first-response operations incidents using **IBM watsonx Orchestrate**. The agent handles classification, owner assignment, ticket creation, next-step recommendations, and team notifications—reducing mean time to response from hours to seconds.
 
+**Live deployment URL:** [https://ops-incident-first-response-agent-v.vercel.app/](https://ops-incident-first-response-agent-v.vercel.app/)
+
 ---
 
 ##  Problem Statement
