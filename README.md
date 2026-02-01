@@ -24,7 +24,7 @@ An intelligent first-response agent that:
 5. **Notifies** stakeholders in real-time
 
 ## 🎥 Demo Video
-https://drive.google.com/file/d/1g_3AKGmou8UhhfcQzI9hEjGRB8ebaZ_U/view?usp=drive_link
+https://drive.google.com/file/d/1g_3AKGmou8UhhfcQzI9hEjGRB8ebaZ_U/view?usp=sharing
 
 ## 📸 Screenshots
 
