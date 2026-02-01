@@ -37,13 +37,6 @@ async function sendNotification(incidentData) {
             text: `*Assigned To:*\n${assignment.owner || 'Unassigned'}`
           }
         ]
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `*Description:*\n${original_alert.description}`
-        }
       }
     ]
   };

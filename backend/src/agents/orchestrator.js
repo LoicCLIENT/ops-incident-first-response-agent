@@ -1,7 +1,7 @@
-const { sendNotification } = require('../services/notifications');
-const { classifyIncident } = require('./classification');
-const { assignOwner } = require('./assignment');
-const { recommendActions } = require('./actions');
+import { sendNotification } from '../services/notifications.js';
+import { classifyIncident } from './classification.js';
+import { assignOwner }  from './assignment.js';
+import { recommendActions } from './actions.js';
 
 function generateTicketId() {
   const year = new Date().getFullYear();
