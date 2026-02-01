@@ -31,7 +31,7 @@ An intelligent first-response agent that:
 
 ##  Architecture
 
-![System Architecture](images/sys_arch5.png)
+![System Architecture](images/sys_arch.jpeg)
 
 ##  Quick Start
 
