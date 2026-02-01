@@ -8,6 +8,25 @@ An agentic AI solution that automates first-response operations incidents using 
 
 **Live deployment URL:** [https://ops-incident-first-response-agent-v.vercel.app/](https://ops-incident-first-response-agent-v.vercel.app/)
 
+
+##  Demo Video
+[Video](https://drive.google.com/file/d/1g_3AKGmou8UhhfcQzI9hEjGRB8ebaZ_U/view?usp=sharing)
+
+## Screenshots
+
+### Empty State
+![Empty](images/empty.png)
+
+### Processing State
+![Processing](images/loading.png)
+
+### Results State
+![Results](images/result1.png)
+
+### Results (Alternative View)
+![Results](images/result3.png)
+
+
 ---
 
 ##  Problem Statement
@@ -37,8 +56,10 @@ An intelligent first-response agent that:
 
 ```bash
 npm install
-cp .env.example .env
 npm run dev
+# If not working run:
+npm run dev  # from /backend
+npm run dev  # from /frontend
 ```
 
 ##  Project Structure
@@ -66,7 +87,7 @@ Frontend: **Loic & Santiago**
 
 AI/Backend: **Santiago, Loic & Aditya** 
 
-AI Logic & QA Lead: **Ahmed**
+Demo, Documentation & Architecture: **Ahmed**
 
 ## License
 
