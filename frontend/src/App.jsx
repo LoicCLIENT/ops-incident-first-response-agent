@@ -105,7 +105,7 @@ function App() {
       <header className="header">
         <div className="header-content">
           <div className="header-title">
-            <img src="/public/logo.png" alt="Logo" className="header-logo" width="150" height="60" />
+            <img src="/logo.png" alt="Logo" className="header-logo" width="150" height="60" />
             <h1>Ops Incident First Response</h1>
           </div>
           <div className="header-badge">
